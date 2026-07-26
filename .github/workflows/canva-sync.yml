@@ -2,6 +2,7 @@ name: Canva Sync
 
 permissions:
   contents: write
+  pages: write
 
 on:
 
@@ -72,3 +73,13 @@ jobs:
           git commit -m "Actualizar capturas Canva" || echo "Sin cambios"
 
           git push
+
+      # Deploy capturas to gh-pages for GitHub Pages project site
+      - name: Deploy capturas to GitHub Pages (gh-pages)
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          publish_dir: ./capturas
+          publish_branch: gh-pages
+          user_name: github-actions
+          user_email: github-actions@github.com
+          allow_empty_commit: true
