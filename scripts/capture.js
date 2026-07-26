@@ -59,7 +59,7 @@ const diagrams = require("../config/canva.json");
                 })
                 .toFile(output);
             
-            // Elimina archivo temporal
+            // Elimina archivo temporal.
             fs.unlinkSync(tempOutput);
             
             console.log("Capturado y recortado:", output);
