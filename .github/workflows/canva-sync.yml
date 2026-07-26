@@ -1,5 +1,8 @@
 name: Canva Sync
 
+permissions:
+  contents: write
+
 on:
 
   schedule:
@@ -19,6 +22,9 @@ jobs:
       # Descargar repositorio
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+          fetch-depth: 0
 
 
       # Instalar Node.js
