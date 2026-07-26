@@ -77,10 +77,18 @@ jobs:
           git push
 
       # Deploy capturas to gh-pages for GitHub Pages project site
+      - name: Prepare publish directory
+        run: |
+          # create a temporary output folder that preserves the `capturas/` path
+          rm -rf out || true
+          mkdir -p out
+          cp -r capturas out/capturas || true
+        shell: bash
+
       - name: Deploy capturas to GitHub Pages (gh-pages)
         uses: peaceiris/actions-gh-pages@v4
         with:
-          publish_dir: ./capturas
+          publish_dir: ./out
           publish_branch: gh-pages
           user_name: github-actions
           user_email: github-actions@github.com
