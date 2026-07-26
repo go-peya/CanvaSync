@@ -7,6 +7,7 @@ on:
 
   workflow_dispatch:
 
+
 jobs:
 
   sync:
@@ -15,25 +16,53 @@ jobs:
 
     steps:
 
-      - uses: actions/checkout@v4
+      # Descargar repositorio
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-      - uses: actions/setup-node@v4
+
+      # Instalar Node.js
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
           node-version: 20
 
-      - run: npm install
+
+      # Instalar dependencias de Playwright
+      - name: Install dependencies
+        run: npm install
         working-directory: scripts
 
-      - run: npx playwright install chromium
+
+      # Instalar navegador Chromium
+      - name: Install Chromium
+        run: npx playwright install chromium
         working-directory: scripts
 
-      - run: node capture.js
+
+      # Ejecutar captura de Canva
+      - name: Capture Canva graphics
+        run: node capture.js
         working-directory: scripts
 
+
+      # Verificar que la imagen fue creada correctamente
+      - name: Verify generated files
+        run: |
+          echo "Archivos actuales:"
+          ls -la
+          echo "Carpeta capturas:"
+          ls -la capturas
+
+
+      # Guardar cambios de imágenes
       - name: Commit PNG
         run: |
           git config user.name github-actions
           git config user.email github-actions@github.com
-          git add .
-          git commit -m "Actualizar capturas" || echo "Sin cambios"
+
+          git add capturas/
+
+          git commit -m "Actualizar capturas Canva" || echo "Sin cambios"
+
           git push
