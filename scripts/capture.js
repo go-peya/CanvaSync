@@ -1,6 +1,7 @@
 const { chromium } = require("playwright");
 const fs = require("fs");
 const path = require("path");
+const sharp = require("sharp");
 
 const diagrams = require("../config/canva.json");
 
@@ -21,28 +22,51 @@ const diagrams = require("../config/canva.json");
             }
         });
 
-        const embedUrl = item.url.includes("?") ? `${item.url}&embed` : `${item.url}?embed`;
-
-        await page.setContent(`
-            <div style="position: relative; width: 100%; height: 0; padding-top: 100%; padding-bottom: 0; margin: 0; overflow: hidden; border-radius: 0; box-shadow: none; background: white;">
-                <iframe loading="lazy" style="position: absolute; width: 100%; height: 100%; top: 0; left: 0; border: none; padding: 0; margin: 0;" src="${embedUrl}" allowfullscreen="allowfullscreen" allow="fullscreen"></iframe>
-            </div>
-        `, {
+        await page.goto(item.url, {
             waitUntil: "domcontentloaded"
         });
 
-        // Espera 5 segundos para que cargue Canva
+        // Espera a que cargue Canva
         await page.waitForTimeout(5000);
 
-        const output = path.join(__dirname, "..", "capturas", `${item.name}.png`);
-
-        await page.locator("iframe").screenshot({
-            path: output
+        // Inyecta CSS para ocultar solo UI flotante sin afectar el diseño
+        await page.addStyleTag({
+            content: `
+                body { background: #ffffff !important; }
+                /* Oculta barra superior */
+                header { display: none !important; }
+                [role="menubar"] { display: none !important; }
+                [role="toolbar"] { display: none !important; }
+                footer { display: none !important; }
+                /* Elimina sombras globales */
+                * { box-shadow: none !important; }
+            `
         });
 
-        console.log("Capturado:", output);
+        const output = path.join(__dirname, "..", "capturas", `${item.name}.png`);
+        const tempOutput = path.join(__dirname, "..", "capturas", `.${item.name}-temp.png`);
 
-        await page.close();
+        // Captura la página completa
+        await page.screenshot({
+            path: tempOutput
+        });
+
+        // Post-procesa con sharp para recortar bordes grises
+        try {
+            await sharp(tempOutput)
+                .trim({
+                    threshold: 100  // Threshold más alto para bordes grises
+                })
+                .toFile(output);
+            
+            // Elimina archivo temporal
+            fs.unlinkSync(tempOutput);
+            
+            console.log("Capturado y recortado:", output);
+        } catch (err) {
+            console.log("Capturado sin recorte:", tempOutput, "->", output);
+            fs.renameSync(tempOutput, output);
+        }
     }
 
     await browser.close();
