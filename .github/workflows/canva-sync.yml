@@ -38,16 +38,15 @@ jobs:
           node-version: 20
 
 
-      # Instalar dependencias de Playwright
-      - name: Install dependencies
-        run: npm install
-        working-directory: scripts
-
-
-      # Instalar navegador Chromium
-      - name: Install Chromium
-        run: npx playwright install chromium
-        working-directory: scripts
+      # Install Node dependencies and Playwright browsers with dependencies
+      - name: Install dependencies & Playwright browsers
+        run: |
+          cd scripts
+          npm ci
+          # Ensure playwright binary is executable (fallback)
+          if [ -f node_modules/.bin/playwright ]; then chmod +x node_modules/.bin/playwright || true; fi
+          npx playwright install chromium --with-deps
+        shell: bash
 
 
       # Ejecutar captura de Canva
